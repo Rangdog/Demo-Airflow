@@ -1,0 +1,44 @@
+name: Deploy Airflow to GCP Composer
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # Xác thực với Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_KEY }}
+      # Cài đặt Google Cloud SDK và gke-gcloud-auth-plugin
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: my-blog-454607
+          install_components: gke-gcloud-auth-plugin
+      # Cấu hình Docker để đẩy image lên GCR
+      - name: Configure Docker for GCR
+        run: |
+          gcloud auth configure-docker gcr.io --quiet
+      # Kết nối với GKE cluster
+      - name: Connect to GKE cluster
+        run: |
+          gcloud container clusters get-credentials demo-quartz-cluster --zone asia-southeast1-b --project my-blog-454607
+
+      - name: Sync DAGs
+        run: |
+          gsutil -m rsync -r dags gs:// us-central1-my-composer-env-5a6f38df-/dags
+
+      - name: Sync scripts
+        run: |
+          gsutil -m rsync -r scripts gs:// us-central1-my-composer-env-5a6f38df-/data/scripts
+
+      - name: Upload requirements.txt
+        run: |
+          gsutil cp requirements.txt gs:// us-central1-my-composer-env-5a6f38df-/requirements.txt
