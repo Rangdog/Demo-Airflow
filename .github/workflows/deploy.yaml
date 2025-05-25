@@ -24,12 +24,12 @@ jobs:
           install_components: gke-gcloud-auth-plugin
       - name: Sync DAGs
         run: |
-          gsutil -m rsync -r dags gs://us-central1-my-composer-env-5a6f38df-/dags
+          gsutil -m rsync -r dags gs://us-central1-my-composer-env-5a6f38df-bucket/dags
 
       - name: Sync scripts
         run: |
-          gsutil -m rsync -r scripts gs://us-central1-my-composer-env-5a6f38df-/data/scripts
+          gsutil -m rsync -r scripts gs://us-central1-my-composer-env-5a6f38df-bucket/data/scripts
 
       - name: Upload requirements.txt
         run: |
-          gsutil cp requirements.txt gs://us-central1-my-composer-env-5a6f38df-/requirements.txt
+          gsutil cp requirements.txt gs://us-central1-my-composer-env-5a6f38df-bucket/requirements.txt
