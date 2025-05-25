@@ -32,4 +32,4 @@ jobs:
 
       - name: Upload requirements.txt
         run: |
-          gsutil cp requirements.txt gs://us-central1-my-composer-env-5a6f38df-bucket/requirements.txt
+          gsutil cp scripts/requirements.txt gs://us-central1-my-composer-env-5a6f38df-bucket/requirements.txt
