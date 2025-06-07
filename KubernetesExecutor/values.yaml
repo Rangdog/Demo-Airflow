@@ -3,6 +3,9 @@ executor: KubernetesExecutor
 config:
   core:
     executor: KubernetesExecutor
+    parallelism: 64                # Tổng số task được phép chạy đồng thời (default 32)
+    max_active_tasks_per_dag: 20  # Tối đa task đồng thời cho mỗi DAG (default 16)
+    max_active_runs_per_dag: 3    # Số DAG run có thể chạy đồng thời cho mỗi DAG (default 16)
     fernet_key: "VBFxq0fipix5IZ8Z1xEGEw=="
     sql_alchemy_conn: postgresql+psycopg2://postgres:postgres@airflow-postgresql.airflow.svc.cluster.local:5432/postgres
     dags_volume_mount_point: /opt/airflow/dags
