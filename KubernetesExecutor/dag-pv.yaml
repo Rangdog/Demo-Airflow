@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dags-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /dags  # Đây là thư mục bạn đã mount từ host qua minikube
+  claimRef:
+    name: dags-pvc
+    namespace: airflow
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dags-pvc
+  namespace: airflow
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

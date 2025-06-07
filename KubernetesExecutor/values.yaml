@@ -1,0 +1,67 @@
+executor: KubernetesExecutor
+
+config:
+  core:
+    executor: KubernetesExecutor
+    fernet_key: "VBFxq0fipix5IZ8Z1xEGEw=="
+    sql_alchemy_conn: postgresql+psycopg2://postgres:postgres@airflow-postgresql.airflow.svc.cluster.local:5432/postgres
+    dags_volume_mount_point: /opt/airflow/dags
+  logging:
+    logging_level: INFO
+  kubernetes:
+    delete_worker_pods: false
+    use_sidecar: true
+    sidecar_container_image: busybox
+    sidecar_container_log_directory: /airflow/logs
+    worker_container_log_path: /opt/airflow/logs
+    worker_log_server_port: 8793
+
+dags:
+  persistence:
+    enabled: true
+    existingClaim: dags-pvc
+
+logs:
+  persistence:
+    enabled: true
+    existingClaim: logs-pvc
+
+webserver:
+  service:
+    type: NodePort
+
+podTemplate: |
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: airflow-worker-template
+  spec:
+    containers:
+      - name: base
+        image: apache/airflow:2.10.5
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: AIRFLOW__CORE__EXECUTOR
+            value: KubernetesExecutor
+          - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+            value: postgresql+psycopg2://postgres:postgres@airflow-postgresql.airflow.svc.cluster.local:5432/postgres
+        volumeMounts:
+          - name: dags
+            mountPath: /opt/airflow/dags
+          - name: logs
+            mountPath: /opt/airflow/logs
+      - name: sidecar
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sh", "-c", "touch /airflow/logs/dummy.log && tail -F /airflow/logs/dummy.log /airflow/logs/*"]
+        volumeMounts:
+          - name: logs
+            mountPath: /airflow/logs
+    restartPolicy: Never
+    volumes:
+      - name: dags
+        persistentVolumeClaim:
+          claimName: dags-pvc
+      - name: logs
+        persistentVolumeClaim:
+          claimName: logs-pvc
